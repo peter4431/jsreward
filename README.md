@@ -34,4 +34,4 @@
     	npm install jsreward
 2. 运行测试
 
-    	node jsreward/tests/usage_server.js
+    	node jsreward/example/usage_server.js
