@@ -65,7 +65,7 @@ REWARD.parseRewardBase = function(rewardStr){
 
     var args = rewardStr.split(this.SPLIT_PROPER);
     var resultObj = {};
-    var type = parseInt(args[0]);
+    var type = args[0];
     args = args.splice(1);
 
     var typeObj = this.types[type];
