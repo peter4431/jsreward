@@ -4,7 +4,7 @@
   "description": "A library for game written by javascript to deal with reward simple both server and client;",
   "main": "index.js",
   "scripts": {
-    "test": "node jsreward/test/usage_server.js"
+    "test": "node jsreward/example/usage_server.js"
   },
   "repository": {
     "type": "git",
