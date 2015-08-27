@@ -37,13 +37,12 @@ REWARD.SPLIT_SELECT = "-";
 REWARD.SPLIT_REWARD = ",";
 REWARD.SPLIT_PROPER = "|";
 
-REWARD.addType = function(type,name,onAdd,args){
+REWARD.addType = function(type,name,args){
     var obj = this.types[type] = {};
-    args = Array.prototype.splice.call(arguments,3);
+    args = Array.prototype.splice.call(arguments,2);
 
     obj.type = type;
     obj.name = name;
-    obj.onAdd = onAdd;
     obj.args = args;
 }
 
@@ -172,16 +171,19 @@ REWARD.parseReward = function(rewardStr){
 
 /**
  * 真正加到玩家身上
+ * @param rewardStr 奖励字符串
+ * @param oneCallback 一个obj的处理函数
  * */
-REWARD.addReward = function(user,rewardStr){
+REWARD.addReward = function(rewardStr,oneCallback,args){
     var rewards = this.parseReward(rewardStr);
+    var args = Array.prototype.splice.call(arguments,2);
 
-    var onAdd;
     for(var i=0;i<rewards.length;i++){
-        onAdd = this.types[rewards[i].type].onAdd;
 
-        if(onAdd){
-            onAdd(user,rewards[i]);
+        if(oneCallback){
+            var margs = args.concat();
+            margs.unshift(rewards[i]);
+            oneCallback.apply(null,margs);
         }
     }
     return rewards;
