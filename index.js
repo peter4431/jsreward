@@ -72,6 +72,7 @@ REWARD.parseRewardBase = function(rewardStr){
 
     resultObj.type = type;
     resultObj.name = typeObj.name;
+    resultObj.raw = rewardStr;
 
     var length = Math.min(typeArgs.length,args.length);
     for(var i=0;i<length;i++){

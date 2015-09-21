@@ -41,7 +41,14 @@ var onAdd = function(obj,userOrOther){
 
 var test = function(){
     reward.addReward("1|1000,5|1|1,7|1|9|20",onAdd,{name:"peter"});
-    reward.addReward("1|1000,5|1|1,[7|1|9|20-7|1|8|20]",onAdd,{name:"peter"});
+    var result = reward.addReward("1|1000,5|1|1,[7|1|9|20-7|1|8|20]",onAdd,{name:"peter"});
+
+    console.log("原始数据:");
+    var raws = []
+    result.forEach(function(obj){
+        raws.push(obj.raw)
+    })
+    console.log(raws.join(","));
 }
 
 init();
