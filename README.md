@@ -39,18 +39,18 @@
 3. 编码
 			
 		var reward = require("jsreward");
-		var onAdd = function(user,obj){
+		var onAdd = function(obj,user){
 			//处理增加物品的逻辑
 		;
 		
-		reward.addType(1,"金币",onAdd,"num");
-    	reward.addType(2,"钻石",onAdd,"num");
-    	reward.addType(3,"精力",onAdd,"num");
-    	reward.addType(4,"星星",onAdd,"num");
-    	reward.addType(5,"道具",onAdd,"id","num");
-    	reward.addType(6,"角色",onAdd,"id");
-    	reward.addType(7,"碎片",onAdd,"id","index");
-    	reward.addType(8,"碟片",onAdd,"id");
-    	reward.addType(9,"其他",onAdd,"name","url");
+		reward.addType(1,"金币","num");
+    	reward.addType(2,"钻石","num");
+    	reward.addType(3,"精力","num");
+    	reward.addType(4,"星星","num");
+    	reward.addType(5,"道具","id","num");
+    	reward.addType(6,"角色","id");
+    	reward.addType(7,"碎片","id","index");
+    	reward.addType(8,"碟片","id");
+    	reward.addType(9,"其他","name","url");
     	
-    	reward.addReward(user,"1|1000,5|1|1,[7|1|9|20-7|1|8|20]");
+    	reward.addReward("1|1000,5|1|1,[7|1|9|20-7|1|8|20]", onAdd, user);
