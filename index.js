@@ -3,6 +3,10 @@
  * Copyright(c) 2015 peter4431
  * MIT Licensed
  *
+ * 1. 奖励策划填写,服务端,客户端统一
+ * 2. 多个同种奖励自动合并
+ * 3. 几率奖励功能
+ *
  ### 1. 收益表达式
  * 为了配置和显示处理简单,使用物品字符串表示东西的类型,id,数量等。
  * 金币-1,钻石-2,精力-3,星星-4,道具-5,角色-6,碎片-7,碟片-8,礼包-9
@@ -29,6 +33,7 @@
  */
 
 var REWARD = {};
+REWARD.countName;
 REWARD.types = {};
 REWARD.selectExp = /^\[.*?\]$/;
 REWARD.intExp = /^\d*$/;//check is int
@@ -44,7 +49,15 @@ REWARD.addType = function(type,name,args){
     obj.type = type;
     obj.name = name;
     obj.args = args;
-}
+};
+
+/**
+ * 设置定义为数量的属性名,用来合并道具
+ * @param name
+ */
+REWARD.setCountName = function(name){
+  this.countName = name;
+};
 
 REWARD.parseValue = function(valueStr){
     if (this.intExp.test(valueStr)){
@@ -52,7 +65,7 @@ REWARD.parseValue = function(valueStr){
     }else{
         return valueStr;
     }
-}
+};
 
 /**
  * 解析 纯|分隔的物品,除定义的属性外允许带几率
@@ -72,7 +85,6 @@ REWARD.parseRewardBase = function(rewardStr){
 
     resultObj.type = type;
     resultObj.name = typeObj.name;
-    resultObj.raw = rewardStr;
 
     var length = Math.min(typeArgs.length,args.length);
     for(var i=0;i<length;i++){
@@ -134,6 +146,7 @@ REWARD.filterSelect = function(rewardStr){
     for(var i=0;i<stairs.length;i++){
         if(mrandom < stairs[i]){
             resultIndex = i;
+            break;
         }
     }
 
@@ -146,7 +159,70 @@ REWARD.filterSelect = function(rewardStr){
 REWARD.filterSpace = function(rewardStr){
     rewardStr = rewardStr.replace(/ /g,"");
     return rewardStr;
-}
+};
+
+/**
+ * 合并奖励的数量
+ * 如果调用过 setCountName 设置过数量属性,可以把其他属性都一样的奖励合并到一起
+ * @param rewards 奖励数组
+ */
+REWARD.mergeCount = function(rewards){
+  // 1. 找到所有包含 countName 的奖励,
+  // 2. 然后检查其他属性是否一样,一样则合并到出现的第一个
+
+  if(!this.countName){
+    return;
+  }
+
+  var propStrs = [];
+
+  var propStr;
+  var item;
+  var index;
+
+  for (var i = 0;i<rewards.length;i++){
+    item = rewards[i];
+
+    propStr = this.getPropStrNoCount(item);
+
+    index = propStrs.indexOf(propStr);
+
+    if (index === -1){
+      propStrs.push(propStr);
+    } else {
+
+      if (item.hasOwnProperty(this.countName)){
+        rewards.splice(i, 1);
+        rewards[index][this.countName] += item[this.countName];
+        i --;
+      }
+    }
+  }
+};
+
+/**
+ * 得到奖励的属性字符串
+ */
+REWARD.getPropStrNoCount = function(item){
+
+  var keys = this.types[item.type].args;
+
+  var indexOfCount = -1;
+
+  while(indexOfCount = keys.indexOf(this.countName), indexOfCount >= 0){
+    keys.splice(indexOfCount, 1);
+  }
+
+  keys = keys.concat(['type', 'name']);
+  keys.sort();
+
+  var arr = [];
+  keys.forEach(function(name){
+    arr.push(item[name]);
+  });
+
+  return arr.join(',');
+};
 
 /**
  * 解析,分隔的字符串
@@ -166,9 +242,22 @@ REWARD.parseReward = function(rewardStr){
         reward && result.push(reward);
     }
 
+    if (this.countName){
+      this.mergeCount(result);
+    }
+
     return result;
 
-}
+};
+
+/**
+ * 奖励转换成字符串
+ * @param rewards 奖励数组
+ * @return {String}
+ */
+REWARD.rewardToStr = function(rewards){
+
+};
 
 /**
  * 真正加到玩家身上
@@ -177,6 +266,7 @@ REWARD.parseReward = function(rewardStr){
  * */
 REWARD.addReward = function(rewardStr,oneCallback,args){
     var rewards = this.parseReward(rewardStr);
+
     var args = Array.prototype.splice.call(arguments,2);
 
     for(var i=0;i<rewards.length;i++){
