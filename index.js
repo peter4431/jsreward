@@ -4,13 +4,14 @@
  * MIT Licensed
  *
  * 1. 奖励策划填写,服务端,客户端统一
- * 2. 多个同种奖励自动合并
- * 3. 几率奖励功能
+ * 2. obj,收益表达字符 互转
+ * 3. 多个同种奖励自动合并
+ * 4. 几率奖励功能
  *
  ### 1. 收益表达式
  * 为了配置和显示处理简单,使用物品字符串表示东西的类型,id,数量等。
  * 金币-1,钻石-2,精力-3,星星-4,道具-5,角色-6,碎片-7,碟片-8,礼包-9
- * 形式为:"type|param1|param2",如下
+ * 形式为:'type|param1|param2',如下
  1|1000--金币1000
  2|1000--钻石1000个
  3|10  --精力10点
@@ -32,133 +33,135 @@
  -- 金币1000，id为1的道具1个，50%几率掉落碎片1,9,50%几率掉落碎片1,8,20表示权重
  */
 
-var REWARD = {};
-REWARD.countName;
-REWARD.types = {};
-REWARD.selectExp = /^\[.*?\]$/;
-REWARD.intExp = /^\d*$/;//check is int
+var Reward = function(){
+  this.countName;
+  this.types = {};
+  this.selectExp = /^\[.*?\]$/;
+  this.intExp = /^\d*$/;//check is int
 
-REWARD.SPLIT_SELECT = "-";
-REWARD.SPLIT_REWARD = ",";
-REWARD.SPLIT_PROPER = "|";
+  this.SPLIT_SELECT = '-';
+  this.SPLIT_REWARD = ',';
+  this.SPLIT_PROPER = '|';this
+}
 
-REWARD.addType = function(type,name,args){
-    var obj = this.types[type] = {};
-    args = Array.prototype.splice.call(arguments,2);
+var pro = Reward.prototype;
 
-    obj.type = type;
-    obj.name = name;
-    obj.args = args;
+pro.addType = function (type, name, args) {
+  var obj = this.types[type] = {};
+  args = Array.prototype.splice.call(arguments, 2);
+
+  obj.type = type;
+  obj.name = name;
+  obj.args = args;
 };
 
 /**
  * 设置定义为数量的属性名,用来合并道具
  * @param name
  */
-REWARD.setCountName = function(name){
+pro.setCountName = function (name) {
   this.countName = name;
 };
 
-REWARD.parseValue = function(valueStr){
-    if (this.intExp.test(valueStr)){
-        return parseInt(valueStr);
-    }else{
-        return valueStr;
-    }
+pro.parseValue = function (valueStr) {
+  if (this.intExp.test(valueStr)) {
+    return parseInt(valueStr);
+  } else {
+    return valueStr;
+  }
 };
 
 /**
  * 解析 纯|分隔的物品,除定义的属性外允许带几率
  * */
-REWARD.parseRewardBase = function(rewardStr){
-    if (!rewardStr){
-        return null;
-    }
+pro.parseRewardBase = function (rewardStr) {
+  if (!rewardStr) {
+    return null;
+  }
 
-    var args = rewardStr.split(this.SPLIT_PROPER);
-    var resultObj = {};
-    var type = args[0];
-    args = args.splice(1);
+  var args = rewardStr.split(this.SPLIT_PROPER);
+  var resultObj = {};
+  var type = args[0];
+  args = args.splice(1);
 
-    var typeObj = this.types[type];
-    var typeArgs = typeObj.args;
+  var typeObj = this.types[type];
+  var typeArgs = typeObj.args;
 
-    resultObj.type = type;
-    resultObj.name = typeObj.name;
+  resultObj.type = type;
+  resultObj.name = typeObj.name;
 
-    var length = Math.min(typeArgs.length,args.length);
-    for(var i=0;i<length;i++){
-        resultObj[typeArgs[i]] = this.parseValue(args[i]);
-    }
+  var length = Math.min(typeArgs.length, args.length);
+  for (var i = 0; i < length; i++) {
+    resultObj[typeArgs[i]] = this.parseValue(args[i]);
+  }
 
 
-    if (args.length <= typeArgs.length){
-        return resultObj;
-    }
+  if (args.length <= typeArgs.length) {
+    return resultObj;
+  }
 
-    var ratio = parseInt(args[i])/100;
-    var mrandom = Math.random();
+  var ratio = parseInt(args[i]) / 100;
+  var mrandom = Math.random();
 
-    if (mrandom < ratio){
-        return resultObj;
-    }else{
-        return null;
-    }
+  if (mrandom < ratio) {
+    return resultObj;
+  } else {
+    return null;
+  }
 }
-
 
 
 /**
  * 按概率选择一个物品
  * */
-REWARD.filterSelect = function(rewardStr){
+pro.filterSelect = function (rewardStr) {
 
-    if(!this.selectExp.test(rewardStr)) {
-        return rewardStr;
+  if (!this.selectExp.test(rewardStr)) {
+    return rewardStr;
+  }
+
+  rewardStr = rewardStr.substr(1, rewardStr.length - 2);
+
+  var rewards = rewardStr.split(this.SPLIT_SELECT);
+  var ratios = [];
+
+  var itemStr;
+  var itemRatioStr;
+  var seperateIndex;
+  for (var i = 0; i < rewards.length; i++) {
+    itemStr = rewards[i];
+    seperateIndex = itemStr.lastIndexOf(this.SPLIT_PROPER);
+    itemRatioStr = itemStr.substr(seperateIndex + 1);
+    rewards[i] = itemStr.substring(0, seperateIndex);
+
+    ratios.push(parseInt(itemRatioStr));
+  }
+
+  var stairs = [];
+  var sum = 0;
+  for (var i = 0; i < ratios.length; i++) {
+    sum = sum + ratios[i];
+    stairs.push(sum);
+  }
+
+  var resultIndex;
+  var mrandom = (Math.random() * sum);
+  for (var i = 0; i < stairs.length; i++) {
+    if (mrandom < stairs[i]) {
+      resultIndex = i;
+      break;
     }
+  }
 
-    rewardStr = rewardStr.substr(1,rewardStr.length-2);
-
-    var rewards = rewardStr.split(this.SPLIT_SELECT);
-    var ratios = [];
-
-    var itemStr;
-    var itemRatioStr;
-    var seperateIndex;
-    for(var i=0;i<rewards.length;i++){
-        itemStr = rewards[i];
-        seperateIndex = itemStr.lastIndexOf(this.SPLIT_PROPER);
-        itemRatioStr = itemStr.substr(seperateIndex+1);
-        rewards[i] = itemStr.substring(0,seperateIndex);
-
-        ratios.push(parseInt(itemRatioStr));
-    }
-
-    var stairs = [];
-    var sum = 0;
-    for(var i=0;i<ratios.length;i++){
-        sum = sum + ratios[i];
-        stairs.push(sum);
-    }
-
-    var resultIndex;
-    var mrandom = (Math.random()*sum);
-    for(var i=0;i<stairs.length;i++){
-        if(mrandom < stairs[i]){
-            resultIndex = i;
-            break;
-        }
-    }
-
-    return rewards[resultIndex];
+  return rewards[resultIndex];
 }
 
 /**
  * 过滤空格
  * */
-REWARD.filterSpace = function(rewardStr){
-    rewardStr = rewardStr.replace(/ /g,"");
-    return rewardStr;
+pro.filterSpace = function (rewardStr) {
+  rewardStr = rewardStr.replace(/ /g, '');
+  return rewardStr;
 };
 
 /**
@@ -166,11 +169,11 @@ REWARD.filterSpace = function(rewardStr){
  * 如果调用过 setCountName 设置过数量属性,可以把其他属性都一样的奖励合并到一起
  * @param rewards 奖励数组
  */
-REWARD.mergeCount = function(rewards){
+pro.mergeCount = function (rewards) {
   // 1. 找到所有包含 countName 的奖励,
   // 2. 然后检查其他属性是否一样,一样则合并到出现的第一个
 
-  if(!this.countName){
+  if (!this.countName) {
     return;
   }
 
@@ -180,21 +183,21 @@ REWARD.mergeCount = function(rewards){
   var item;
   var index;
 
-  for (var i = 0;i<rewards.length;i++){
+  for (var i = 0; i < rewards.length; i++) {
     item = rewards[i];
 
     propStr = this.getPropStrNoCount(item);
 
     index = propStrs.indexOf(propStr);
 
-    if (index === -1){
+    if (index === -1) {
       propStrs.push(propStr);
     } else {
 
-      if (item.hasOwnProperty(this.countName)){
+      if (item.hasOwnProperty(this.countName)) {
         rewards.splice(i, 1);
         rewards[index][this.countName] += item[this.countName];
-        i --;
+        i--;
       }
     }
   }
@@ -203,21 +206,21 @@ REWARD.mergeCount = function(rewards){
 /**
  * 得到奖励的属性字符串
  */
-REWARD.getPropStrNoCount = function(item){
+pro.getPropStrNoCount = function (item) {
 
-  var keys = this.types[item.type].args;
+  var keys = this.types[item.type].args.concat();
 
   var indexOfCount = -1;
 
-  while(indexOfCount = keys.indexOf(this.countName), indexOfCount >= 0){
+  while (indexOfCount = keys.indexOf(this.countName), indexOfCount >= 0) {
     keys.splice(indexOfCount, 1);
   }
 
-  keys = keys.concat(['type', 'name']);
+  keys.push('type');
   keys.sort();
 
   var arr = [];
-  keys.forEach(function(name){
+  keys.forEach(function (name) {
     arr.push(item[name]);
   });
 
@@ -227,26 +230,26 @@ REWARD.getPropStrNoCount = function(item){
 /**
  * 解析,分隔的字符串
  * */
-REWARD.parseReward = function(rewardStr){
-    rewardStr = this.filterSpace(rewardStr);
-    var result = [];
-    var rewards = rewardStr.split(this.SPLIT_REWARD);
+pro.parseReward = function (rewardStr) {
+  rewardStr = this.filterSpace(rewardStr);
+  var result = [];
+  var rewards = rewardStr.split(this.SPLIT_REWARD);
 
-    var reward;
-    var itemStr;
-    for(var i=0;i<rewards.length;i++){
-        itemStr = rewards[i];
+  var reward;
+  var itemStr;
+  for (var i = 0; i < rewards.length; i++) {
+    itemStr = rewards[i];
 
-        itemStr = this.filterSelect(itemStr);
-        reward = this.parseRewardBase(itemStr);
-        reward && result.push(reward);
-    }
+    itemStr = this.filterSelect(itemStr);
+    reward = this.parseRewardBase(itemStr);
+    reward && result.push(reward);
+  }
 
-    if (this.countName){
-      this.mergeCount(result);
-    }
+  if (this.countName) {
+    this.mergeCount(result);
+  }
 
-    return result;
+  return result;
 
 };
 
@@ -255,8 +258,29 @@ REWARD.parseReward = function(rewardStr){
  * @param rewards 奖励数组
  * @return {String}
  */
-REWARD.rewardToStr = function(rewards){
+pro.rewardToStr = function (rewards) {
+  var result = [];
+  for (var i = 0; i < rewards.length; i++) {
+    result.push(this.rewardToStrBase(rewards[i]));
+  }
 
+  return result.join(this.SPLIT_REWARD);
+};
+
+/**
+ * 单个奖励转字符串
+ * @param reward
+ */
+pro.rewardToStrBase = function (reward) {
+  var keyArr = ['type'];
+  keyArr = keyArr.concat(this.types[reward.type].args);
+  var propArr = [];
+
+  keyArr.forEach(function (name) {
+    propArr.push(reward[name]);
+  })
+
+  return propArr.join(this.SPLIT_PROPER);
 };
 
 /**
@@ -264,20 +288,20 @@ REWARD.rewardToStr = function(rewards){
  * @param rewardStr 奖励字符串
  * @param oneCallback 一个obj的处理函数
  * */
-REWARD.addReward = function(rewardStr,oneCallback,args){
-    var rewards = this.parseReward(rewardStr);
+pro.addReward = function (rewardStr, oneCallback, args) {
+  var rewards = this.parseReward(rewardStr);
 
-    var args = Array.prototype.splice.call(arguments,2);
+  var args = Array.prototype.splice.call(arguments, 2);
 
-    for(var i=0;i<rewards.length;i++){
+  for (var i = 0; i < rewards.length; i++) {
 
-        if(oneCallback){
-            var margs = args.concat();
-            margs.unshift(rewards[i]);
-            oneCallback.apply(null,margs);
-        }
+    if (oneCallback) {
+      var margs = args.concat();
+      margs.unshift(rewards[i]);
+      oneCallback.apply(null, margs);
     }
-    return rewards;
+  }
+  return rewards;
 }
 
-module.exports = REWARD;
+module.exports = new Reward();

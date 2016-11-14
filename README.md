@@ -25,6 +25,14 @@
 
         1|1000,5|1|1,[7|1|9|20-7|1|8|20]
         -- 金币1000，id为1的道具1个，50%几率掉落碎片1,9,50%几率掉落碎片1,8,20表示权重
+        
+        
+## 功能
+
+ 1. 奖励策划填写,服务端,客户端统一
+ 2. obj,收益表达字符 互转
+ 3. 多个同种奖励自动合并
+ 4. 几率奖励功能
 
 ## 使用
 ---
@@ -39,18 +47,24 @@
 3. 编码
 			
 		var reward = require("jsreward");
-		var onAdd = function(obj,user){
-			//处理增加物品的逻辑
-		;
-		
-		reward.addType(1,"金币","num");
-    	reward.addType(2,"钻石","num");
-    	reward.addType(3,"精力","num");
-    	reward.addType(4,"星星","num");
-    	reward.addType(5,"道具","id","num");
-    	reward.addType(6,"角色","id");
-    	reward.addType(7,"碎片","id","index");
-    	reward.addType(8,"碟片","id");
-    	reward.addType(9,"其他","name","url");
-    	
-    	reward.addReward("1|1000,5|1|1,[7|1|9|20-7|1|8|20]", onAdd, user);
+        
+        reward.addType(1, 'coin', 'num');
+        reward.addType(3, 'diamond', 'num');
+        reward.addType(5, '道具', 'id', 'num');
+        reward.addType(7, '碎片', 'id', 'index');
+        reward.addType(9, '其他', 'name', 'url');
+    
+        reward.setCountName('num');
+    
+        var rewardStr = '1|1000,5|1|1, 1|1500,5|1|1,[7|1|9|20-7|1|8|20]';
+        var rewards = reward.parseReward(rewardStr);
+    
+        // reward->str
+        var mstr = reward.rewardToStr(rewards);
+    
+        console.log(mstr);
+    
+        //reward->str->reward->json
+        var newRewardStr = JSON.stringify(reward.parseReward(mstr));
+    
+        should.equal(newRewardStr, JSON.stringify(rewards));
