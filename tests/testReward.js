@@ -2,6 +2,8 @@
  * Created by wyang on 16/11/14.
  */
 
+var should = require('should');
+
 describe('test reward', function () {
 
   it('test merge reward', function () {
@@ -19,9 +21,9 @@ describe('test reward', function () {
 
     reward.setCountName('num');
 
-    var rewardStr = '1|1000,5|1|1,7|1|9|20, 1|1500,5|1|1,[7|1|9|20-7|1|8|20]';
+    var rewardStr = '1|1000,5|1|1, 1|1500,5|1|1,[7|1|9|20-7|1|8|20]';
     var rewards = reward.parseReward(rewardStr);
 
-    console.log(JSON.stringify(rewards));
+    should.equal(rewards.length, 3);
   })
 })
