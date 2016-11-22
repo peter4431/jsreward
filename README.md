@@ -40,11 +40,8 @@
 1. 安装
 
     	npm install jsreward
-2. 运行测试
-
-    	node jsreward/example/usage_server.js
     	
-3. 编码
+2. 编码
 			
 		var reward = require("jsreward");
         
