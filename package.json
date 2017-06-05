@@ -23,7 +23,7 @@
     "url": "https://github.com/peter4431/jsreward/issues"
   },
   "homepage": "https://github.com/peter4431/jsreward#readme",
-  "dependencies": {
+  "devDependencies": {
     "should": "^11.1.1"
   }
 }
