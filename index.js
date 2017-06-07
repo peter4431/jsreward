@@ -37,7 +37,7 @@ var Reward = function(){
   this.countName;
   this.types = {};
   this.selectExp = /^\[.*?\]$/;
-  this.intExp = /^\d*$/;//check is int
+  this.intExp = /^[\+\-\.\d]*$/;//check is number
 
   this.SPLIT_SELECT = '-';
   this.SPLIT_REWARD = ',';
