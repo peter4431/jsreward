@@ -231,6 +231,7 @@ pro.getPropStrNoCount = function (item) {
  * 解析,分隔的字符串
  * */
 pro.parseReward = function (rewardStr) {
+  rewardStr = rewardStr || '';
   rewardStr = this.filterSpace(rewardStr);
   var result = [];
   var rewards = rewardStr.split(this.SPLIT_REWARD);
