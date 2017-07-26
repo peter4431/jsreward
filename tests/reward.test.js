@@ -6,6 +6,25 @@ var should = require('should');
 
 describe('test reward', function () {
 
+  it('test parse', function(){
+    var reward = require('../');
+
+    reward.addType(1, 'coin', 'num');
+    reward.addType(3, 'diamond', 'num');
+
+    reward.setCountName('num');
+
+    let result;
+
+    result = reward.parseReward(1);
+
+    should.equal(JSON.stringify(result),'[]');
+
+    result = reward.parseReward('asdf');
+
+    should.equal(JSON.stringify(result),'[]');
+  });
+
   it('test merge reward', function () {
 
     var reward = require('../');

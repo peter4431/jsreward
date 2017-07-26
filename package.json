@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/peter4431/jsreward#readme",
   "devDependencies": {
-    "should": "^11.1.1"
+    "should": "^11.1.1",
+    "mocha": "^2.5.3"
   }
 }

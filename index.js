@@ -85,6 +85,11 @@ pro.parseRewardBase = function (rewardStr) {
   args = args.splice(1);
 
   var typeObj = this.types[type];
+
+  if (!typeObj) {
+    return null;
+  }
+
   var typeArgs = typeObj.args;
 
   resultObj.type = type;
@@ -232,6 +237,10 @@ pro.getPropStrNoCount = function (item) {
  * */
 pro.parseReward = function (rewardStr) {
   rewardStr = rewardStr || '';
+  if (typeof(rewardStr) !== 'string') {
+    rewardStr = '';
+  }
+
   rewardStr = this.filterSpace(rewardStr);
   var result = [];
   var rewards = rewardStr.split(this.SPLIT_REWARD);
