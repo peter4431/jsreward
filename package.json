@@ -1,6 +1,6 @@
 {
   "name": "jsreward",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "A library for game written by javascript to deal with reward simple both server and client;",
   "main": "index.js",
   "scripts": {
